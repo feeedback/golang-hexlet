@@ -1,29 +1,19 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"math"
 	"net/http"
-	"os"
-	"os/exec"
 	"testing"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/adaptor"
+	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/require"
 )
 
 func TestPractice(t *testing.T) {
-	r := require.New(t)
-	// Check that we can't run a new process on the same port.
-	runOutput2 := bytes.NewBuffer(nil)
-	runCmd2 := exec.Command("go", "run", "solution.go")
-	runCmd2.Stdout = runOutput2
-	runCmd2.Stderr = runOutput2
-	r.Error(runCmd2.Run())
-	r.Contains(runOutput2.String(), "listen tcp :8080: bind: address already in use")
-
-	// Run test cases.
 	testCases := []struct {
 		name                 string
 		x                    int
@@ -66,18 +56,23 @@ func TestPractice(t *testing.T) {
 		},
 	}
 
+	app := fiber.New()
+	app.Get("/sum", adaptor.HTTPHandlerFunc(sumHandler))
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			req, tErr := http.NewRequest(
 				http.MethodGet,
-				fmt.Sprintf("http://localhost:8080/sum?x=%d&y=%d", tc.x, tc.y),
+				fmt.Sprintf("/sum?x=%d&y=%d", tc.x, tc.y),
 				nil,
 			)
 			tr := require.New(t)
 			tr.NoError(tErr)
 
-			httpClient := http.Client{}
-			resp, tErr := httpClient.Do(req)
+			testLogger, logHook := test.NewNullLogger()
+			SetLogger(testLogger)
+
+			resp, tErr := app.Test(req)
 			tr.NoError(tErr)
 			defer resp.Body.Close()
 
@@ -88,12 +83,16 @@ func TestPractice(t *testing.T) {
 				tr.Equal(tc.expectedResponseBody, string(body))
 			}
 
-			dat, _ := os.ReadFile(".log")
-			log := string(dat)
-			fmt.Print(log)
-			if tc.expectedLog != "" {
-				tr.Contains(log, tc.expectedLog)
+			var logrusOutput string
+			lastLogEntry := logHook.LastEntry()
+
+			if lastLogEntry != nil {
+				var err error
+				logrusOutput, err = lastLogEntry.String()
+				require.NoError(t, err)
 			}
+
+			tr.Contains(logrusOutput, tc.expectedLog)
 		})
 	}
 }

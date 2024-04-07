@@ -5,56 +5,57 @@ import (
 	"math"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 
 	"github.com/sirupsen/logrus"
 )
 
-func main() {
+var logger *logrus.Logger
 
-	cwd, _ := os.Getwd()
-	logFile := filepath.Join(cwd, ".log")
-	logger := logrus.New()
+func SetLogger(l *logrus.Logger) {
+	logger = l
+}
+
+func init() {
+	logger = logrus.New()
 	logger.SetOutput(os.Stdout)
-	file, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0755)
-	if err != nil {
-		logger.Fatal(err)
-	}
-	defer file.Close()
-	logger.SetOutput(file)
+}
 
+func sumHandler(w http.ResponseWriter, r *http.Request) {
+	xParam := r.URL.Query().Get("x")
+	x, err := strconv.Atoi(xParam)
+	if err != nil {
+		w.Write([]byte("-1"))
+		return
+	}
+
+	yParam := r.URL.Query().Get("y")
+	y, err := strconv.Atoi(yParam)
+	if err != nil {
+		w.Write([]byte("-1"))
+		return
+	}
+
+	sum := x + y
+
+	if math.MaxInt-abs(x) < abs(y) {
+		logger.WithFields(logrus.Fields{"x": x, "y": y}).Warn("Sum overflows int")
+
+		w.Write([]byte("-1"))
+		return
+	}
+
+	w.Write([]byte(strconv.Itoa(sum)))
+}
+
+func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Go to /sum"))
 	})
 
-	http.HandleFunc("/sum", func(w http.ResponseWriter, r *http.Request) {
-		// BEGIN (write your solution here)
-		xParam := r.URL.Query().Get("x")
-		x, err := strconv.Atoi(xParam)
-		if err != nil {
-			w.Write([]byte("-1"))
-			return
-		}
-
-		yParam := r.URL.Query().Get("y")
-		y, err := strconv.Atoi(yParam)
-		if err != nil {
-			w.Write([]byte("-1"))
-			return
-		}
-
-		sum := x + y
-
-		if math.MaxInt-abs(x) < abs(y) {
-			logger.WithFields(logrus.Fields{"x": x, "y": y}).Warn("Sum overflows int")
-			w.Write([]byte("-1"))
-			return
-		}
-
-		w.Write([]byte(strconv.Itoa(sum)))
-		// END
-	})
+	// BEGIN (write your solution here)
+	http.HandleFunc("/sum", sumHandler)
+	// END
 
 	port := "8080"
 	logWithPort := logrus.WithFields(logrus.Fields{
