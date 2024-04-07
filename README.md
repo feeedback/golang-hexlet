@@ -1,10 +1,8 @@
-# golang-hexlet
-
-## Веб-разработка на Go
+## "Веб-разработка на Go"
 
 [Курс "Веб-разработка на Go" на Hexlet](https://ru.hexlet.io/courses/go-web-development)
 
-##### Содержание
+#### Содержание
 
 1. Введение
 2. Веб-разработка на Go [✔](go-web-development/2/)
