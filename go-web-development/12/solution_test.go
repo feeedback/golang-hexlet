@@ -99,12 +99,13 @@ func TestPractice(t *testing.T) {
 `,
 		},
 	}
+	webApp := createAppRoutes()
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			req, tErr := http.NewRequest(
 				tc.requestMethod,
-				"http://localhost:8080"+tc.requestPath,
+				tc.requestPath,
 				strings.NewReader(tc.requestBody),
 			)
 			tr := require.New(t)
@@ -112,8 +113,7 @@ func TestPractice(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 
-			httpClient := http.Client{}
-			resp, tErr := httpClient.Do(req)
+			resp, tErr := webApp.Test(req)
 			tr.NoError(tErr)
 			defer resp.Body.Close()
 

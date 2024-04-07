@@ -23,7 +23,7 @@ var (
 	items []Item
 )
 
-func main() {
+func createAppRoutes() *fiber.App {
 	viewsEngine := html.New("./templates", ".tmpl")
 
 	webApp := fiber.New(fiber.Config{
@@ -49,6 +49,12 @@ func main() {
 		return c.Render("items", items)
 	})
 	// END
+
+	return webApp
+}
+
+func main() {
+	webApp := createAppRoutes()
 
 	logrus.Fatal(webApp.Listen(":8080"))
 }
