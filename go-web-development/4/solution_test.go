@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
 )
 
@@ -47,18 +48,20 @@ func TestPractice(t *testing.T) {
 		},
 	}
 
+	app := fiber.New()
+	app.Get("/convert", convertHandler)
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			req, tErr := http.NewRequest(
 				http.MethodGet,
-				fmt.Sprintf("http://localhost:8080/convert?from=%s&to=%s", tc.from, tc.to),
+				fmt.Sprintf("/convert?from=%s&to=%s", tc.from, tc.to),
 				nil,
 			)
 			tr := require.New(t)
 			tr.NoError(tErr)
 
-			httpClient := http.Client{}
-			resp, tErr := httpClient.Do(req)
+			resp, tErr := app.Test(req)
 			tr.NoError(tErr)
 			defer resp.Body.Close()
 
