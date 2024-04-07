@@ -32,14 +32,14 @@ func testRequest(r *require.Assertions, body string, wantCode int, wantBody stri
 	if body != "" {
 		bodyReader = strings.NewReader(body)
 	}
-	req, err := http.NewRequest(http.MethodPost, "http://localhost:8080/push/send", bodyReader)
+	req, err := http.NewRequest(http.MethodPost, "/push/send", bodyReader)
 	r.NoError(err)
 
 	req.Header.Set("Content-Type", "application/json")
 
-	httpClient := &http.Client{}
-	resp, err := httpClient.Do(req)
-	r.NoError(err)
+	webApp := createAppRoutes()
+	resp, tErr := webApp.Test(req)
+	r.NoError(tErr)
 
 	bodyBytes, err := io.ReadAll(resp.Body)
 	r.NoError(err)

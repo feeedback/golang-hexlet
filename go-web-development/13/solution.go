@@ -23,7 +23,7 @@ type (
 
 var pushNotificationsQueue []PushNotification
 
-func main() {
+func createAppRoutes() *fiber.App {
 	// BEGIN (write your solution here)
 	webApp := fiber.New(fiber.Config{
 		ReadTimeout:  300 * time.Millisecond,
@@ -51,6 +51,12 @@ func main() {
 
 		return c.SendStatus(fiber.StatusOK)
 	})
+
+	return webApp
+}
+
+func main() {
+	webApp := createAppRoutes()
 
 	logrus.Fatal(webApp.Listen(":8080"))
 }
