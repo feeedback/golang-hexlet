@@ -45,7 +45,7 @@ var (
 	contextKeyUser = "user"
 )
 
-func main() {
+func createAppRoutes() *fiber.App {
 	webApp := fiber.New()
 	webApp.Get("/", func(c *fiber.Ctx) error {
 		return c.SendStatus(200)
@@ -123,7 +123,12 @@ func main() {
 
 		return c.JSON(ProfileResponse{Email: user.Email})
 	})
+	return webApp
+}
+
+func main() {
 	// END
+	webApp := createAppRoutes()
 
 	logrus.Fatal(webApp.Listen(webApiPort))
 }
