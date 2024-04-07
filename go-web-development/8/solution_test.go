@@ -1,4 +1,4 @@
-package main_test
+package main
 
 import (
 	"io"
@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
 )
 
@@ -79,11 +80,17 @@ func TestPractice(t *testing.T) {
 		},
 	}
 
+	webApp := fiber.New()
+	webApp.Post("/tasks", createTaskHandler)
+	webApp.Patch("/tasks/:id", updateTaskHandler)
+	webApp.Get("/tasks/:id", getTaskHandler)
+	webApp.Delete("/tasks/:id", deleteTaskHandler)
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			req, tErr := http.NewRequest(
 				tc.requestMethod,
-				"http://localhost:8080"+tc.requestPath,
+				tc.requestPath,
 				strings.NewReader(tc.requestBody),
 			)
 			tr := require.New(t)
@@ -91,8 +98,7 @@ func TestPractice(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 
-			httpClient := http.Client{}
-			resp, tErr := httpClient.Do(req)
+			resp, tErr := webApp.Test(req)
 			tr.NoError(tErr)
 			defer resp.Body.Close()
 
