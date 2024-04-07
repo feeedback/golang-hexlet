@@ -15,7 +15,7 @@
 7. Хранение данных в памяти Go-приложения [✔](go-web-development/7/)
 8. CRUD-операции в Fiber [✔](go-web-development/8/)
 9. Валидация HTTP-запросов [✔](go-web-development/9/)
-10. HTTP Middleware
+10. HTTP Middleware [✔](go-web-development/10/)
 11. JWT-авторизация на сервере
 12. Шаблонизация в Go
 13. Обработка ошибок в веб-приложении
