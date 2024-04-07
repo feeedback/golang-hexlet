@@ -2,7 +2,7 @@
 package main
 
 import (
-	"os"
+	// "os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -12,12 +12,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func main() {
-	file, err := os.OpenFile(".log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		logrus.Fatalf("error opening file: %v", err)
-	}
-	defer file.Close()
+func createAppRoutes() *fiber.App {
+	// file, err := os.OpenFile(".log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	// if err != nil {
+	// 	logrus.Fatalf("error opening file: %v", err)
+	// }
+	// defer file.Close()
 
 	webApp := fiber.New()
 	webApp.Get("/", func(c *fiber.Ctx) error {
@@ -28,7 +28,7 @@ func main() {
 	webApp.Use(requestid.New())
 	webApp.Use(logger.New(logger.Config{
 		Format: "${locals:requestid}: ${method} ${path} - ${status}\n",
-		Output: file,
+		// Output: file,
 	}))
 	webApp.Use(limiter.New(limiter.Config{
 		KeyGenerator: func(c *fiber.Ctx) string {
@@ -46,6 +46,11 @@ func main() {
 	webApp.Get("/bar", func(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusOK)
 	})
+	return webApp
+}
+
+func main() {
+	webApp := createAppRoutes()
 
 	logrus.Fatal(webApp.Listen(":8080"))
 }
